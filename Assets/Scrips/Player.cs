@@ -11,15 +11,22 @@ public class Player : MonoBehaviour
     public float fireRate = 0.2f;   // 0.2 giây bắn 1 viên
     private float nextFireTime = 0f;
 
+    public AudioSource audioSource;
+    public AudioClip shootingSound;
+
+    GameController controller;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        
+        controller = FindAnyObjectByType<GameController>();
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (controller.IsGameover())
+            return;
         float xDix = Input.GetAxisRaw("Horizontal");
         if (xDix < 0 && transform.position.x <= -7.8 || xDix > 0 && transform.position.x >= 7.8)
             return;
@@ -36,14 +43,22 @@ public class Player : MonoBehaviour
     {
         if(VienDan && shootingPoint )
         {
+            if(audioSource && shootingPoint)
+            {
+                audioSource.PlayOneShot(shootingSound);
+            }
             Instantiate(VienDan, transform.position, Quaternion.identity);
         }
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
+
+    private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.CompareTag("Enemy"))
+        if (collision.CompareTag("Enemy"))
         {
+            controller.SetGameoverState(true);
+            Destroy(collision.gameObject);
+
             Debug.Log("Ket thuc");
         }
     }
